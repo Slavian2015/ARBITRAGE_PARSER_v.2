@@ -5,6 +5,8 @@ from urllib.parse import urlencode
 import hashlib
 import hmac
 
+import decimal
+
 main_path_data = os.path.abspath(r"C:/inetpub/wwwroot/WBW/data")
 a_file1 = open(main_path_data + "\\rools.json", "r")
 rools = json.load(a_file1)
@@ -49,7 +51,7 @@ def alfa(val1, val2, price, amount):
     for i in rools['alfa']['amount_precision']:
         if para == i:
 
-            print('AMOUNT 1 ####', amount)
+            # print('AMOUNT 1 ####', amount)
 
             d = int(rools['alfa']['amount_precision'][i])
 
@@ -73,10 +75,14 @@ def alfa(val1, val2, price, amount):
             print('PRICE  before ####', price)
             d = rools['alfa']['price_precision'][i]
 
-            def custom_round(number, ndigits=d):
-                return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
+            def chop_to_n_decimals(x, n):
 
-            price = custom_round(float(price))
+                tre = decimal.Decimal(repr(x))
+                targetdigit = decimal.Decimal("1e%d" % -n)
+                chopped = tre.quantize(targetdigit, decimal.ROUND_DOWN)
+                return float(chopped)
+
+            price = str(chop_to_n_decimals(float(price), d))
             print('PRICE after ####', price)
             pass
         else:
@@ -119,11 +125,11 @@ def alfa(val1, val2, price, amount):
         class ScriptQuitCondition(Exception):
             pass
 
-        print('NEW ORDER :', 'ALFA', '\n')
+        print('NEW ORDER  :', 'ALFA', '\n')
         print('direction  :', direction)
-        print('para  :', para)
-        print('amount  :', amount)
-        print('price  :', price)
+        print('para       :', para)
+        print('amount     :', amount)
+        print('price      :', price)
 
         order = {
             'type': direction,
@@ -177,7 +183,7 @@ def alfa(val1, val2, price, amount):
 def alfa_cancel(id):
     #####  direction  (buy  / sell)
     from time import time
-
+    print('######   ALFA CANCEL  #####')
     a_file = open(main_path_data + "\\keys.json", "r")
     json_object = json.load(a_file)
     a_file.close()
@@ -248,7 +254,7 @@ def hot(val1, val2, price, amount):
 
   for i in rools['hot']['amount_precision']:
         if para == i:
-            print('AMOUNT 1 ####', amount)
+            # print('AMOUNT 1 ####', amount)
 
             d = int(rools['hot']['amount_precision'][i])
 
@@ -256,7 +262,7 @@ def hot(val1, val2, price, amount):
                 return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
 
             amount = custom_round(amount)
-            print('AMOUNT 3 ####', amount)
+            # print('AMOUNT 3 ####', amount)
 
             pass
         else:
@@ -264,14 +270,18 @@ def hot(val1, val2, price, amount):
   for i in rools['hot']['price_precision']:
         if para == i:
 
-            print('PRICE  before ####', price)
+            # print('PRICE  before ####', price)
             d = rools['hot']['price_precision'][i]
 
-            def custom_round(number, ndigits=d):
-                return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
+            def chop_to_n_decimals(x, n):
 
-            price = custom_round(float(price))
-            print('PRICE after ####', price)
+                tre = decimal.Decimal(repr(x))
+                targetdigit = decimal.Decimal("1e%d" % -n)
+                chopped = tre.quantize(targetdigit, decimal.ROUND_DOWN)
+                return float(chopped)
+
+            price = str(chop_to_n_decimals(float(price), d))
+            # print('PRICE after ####', price)
             pass
         else:
             pass
@@ -314,9 +324,9 @@ def hot(val1, val2, price, amount):
 
       print('\n', 'NEW ORDER :', 'HOT', '\n')
       print('direction  :', direction)
-      print('para  :', para)
-      print('amount  :', amount)
-      print('price  :', price)
+      print('para       :', para)
+      print('amount     :', amount)
+      print('price      :', price)
 
       msg = "amount={}&api_key={}&isfee=0&market={}&price={}&side={}&secret_key={}".format(
           amount, input1, para, price, direction, input2)
@@ -372,7 +382,7 @@ def hot_cancel(val1, val2, id):
           pass
 
 
-
+    print('######    HOT CANCEL   ######')
     a_file = open(main_path_data + "\\keys.json", "r")
     json_object = json.load(a_file)
     a_file.close()
@@ -449,30 +459,34 @@ def live(val1, val2, price, amount):
 
     for i in rools['live']['amount_precision']:
         if para == i:
-            print('AMOUNT  ####', amount)
+            # print('AMOUNT  ####', amount)
             d = int(rools['live']['amount_precision'][i])
             def custom_round(number, ndigits=d):
                 return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
 
             amount = custom_round(amount)
-            print('AMOUNT  ####', amount)
+            # print('AMOUNT  ####', amount)
             pass
         else:
             pass
     for i in rools['live']['price_precision']:
         if para == i:
             # price = format(price, '.10f')
-            print('PRICE  ####', price)
+            # print('PRICE  ####', price)
             # price = Context(prec=(rools['live']['price_precision'][i] + 1), rounding=ROUND_DOWN).create_decimal(price)
             # price = float(price)
 
             d = rools['live']['price_precision'][i]
 
-            def custom_round(number, ndigits=d):
-                return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
+            def chop_to_n_decimals(x, n):
 
-            price = custom_round(float(price))
-            print('PRICE  ####', price)
+                tre = decimal.Decimal(repr(x))
+                targetdigit = decimal.Decimal("1e%d" % -n)
+                chopped = tre.quantize(targetdigit, decimal.ROUND_DOWN)
+                return float(chopped)
+
+            price = chop_to_n_decimals(float(price), d)
+            # print('PRICE  ####', price)
             pass
         else:
             pass
@@ -514,7 +528,7 @@ def live(val1, val2, price, amount):
         class ScriptQuitCondition(Exception):
             pass
 
-        print('\n', '----NEW ORDER :', 'LIVE-----', '\n')
+        print('\n', 'NEW ORDER :', 'LIVE', '\n')
         print('direction  :', direction)
         print('para  :', para)
         print('amount  :', amount)
@@ -592,7 +606,7 @@ def live_cancel(val1, val2, id):
         elif i == parametr2:
             para = i
             pass
-
+    print('######    LIVE CANCEL   ######')
 
     a_file = open(main_path_data + "\\keys.json", "r")
     json_object = json.load(a_file)

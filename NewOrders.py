@@ -6,6 +6,9 @@ import requests
 from urllib.parse import urlencode
 import hashlib
 import hmac
+import decimal
+import concurrent.futures
+
 
 main_path_data = os.path.abspath(r"C:/inetpub/wwwroot/WBW/data")
 a_file1 = open(main_path_data + "\\rools.json", "r")
@@ -13,10 +16,10 @@ rools = json.load(a_file1)
 a_file1.close()
 
 
-########################     ALFA    ##########################
 def alfa(val1, val2, price, amount):
-    #####  direction  (buy  / sell)
+
     from time import time
+    from urllib.parse import urlencode
 
     if val1 == 'USD' or val1 == 'USDT' or val2 == 'USD' or val2 == 'USDT':
         if val1 == 'USD' or val1 == 'USDT':
@@ -32,7 +35,6 @@ def alfa(val1, val2, price, amount):
         else:
             direction = "sell"
             pass
-
 
 
     tickers_all = ['BTC_USD', 'PZM_USD', 'ETH_USD', 'ETH_USDT', 'PZM_BTC', 'ETH_BTC']
@@ -51,7 +53,7 @@ def alfa(val1, val2, price, amount):
     for i in rools['alfa']['amount_precision']:
         if para == i:
 
-            print('AMOUNT 1 ####', amount)
+            # print('AMOUNT 1 ####', amount)
 
             d = int(rools['alfa']['amount_precision'][i])
 
@@ -59,55 +61,24 @@ def alfa(val1, val2, price, amount):
                 return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
 
             amount = custom_round(amount)
-            print('AMOUNT 3 ####', amount)
+            # print('AMOUNT 3 ####', amount)
             pass
         else:
             pass
     for i in rools['alfa']['price_precision']:
         if para == i:
-
-            # # price = format(price, '.10f')
-            # print('PRICE  ####', price)
-            # price = Context(prec=(rools['alfa']['price_precision'][i] + 1), rounding=ROUND_DOWN).create_decimal(price)
-            # price = float(price)
-            # print('PRICE  ####', price)
-
-            # print('PRICE  before ####', price)
             d = rools['alfa']['price_precision'][i]
+            def chop_to_n_decimals(x, n):
 
-            # def custom_round(number, ndigits=d):
-            #     return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
-            #
-            # price = custom_round(price)
+                tre = decimal.Decimal(repr(x))
+                targetdigit = decimal.Decimal("1e%d" % -n)
+                chopped = tre.quantize(targetdigit, decimal.ROUND_DOWN)
+                return float(chopped)
 
-
-            price = round(float(price), d)
-            print('PRICE after ####', price)
+            price = str(chop_to_n_decimals(float(price), d))
             pass
         else:
             pass
-
-
-    def keys():
-        if os.path.isfile(main_path_data + "\\keys.json"):
-            pass
-        else:
-
-            dictionary = {"1": {"key": "Api key",
-                                "api": "Api secret"},
-                          "2": {"key": "Api key",
-                                "api": "Api secret"},
-                          "3": {"key": "Api key",
-                                "api": "Api secret"},
-                          "4": {"key": "Chat id", "api": "Token"}}
-
-            keys1 = json.dumps(dictionary, indent=4)
-            with open(main_path_data + "\\keys.json", "w") as outfile:
-                outfile.write(keys1)
-                outfile.close()
-                pass
-
-    keys()
 
     a_file = open(main_path_data + "\\keys.json", "r")
     json_object = json.load(a_file)
@@ -117,18 +88,12 @@ def alfa(val1, val2, price, amount):
     input2 = json_object["1"]['api']
 
     if input1 != "Api key" and input2 != "Api secret":
-        # Свой класс исключений
-        class ScriptError(Exception):
-            pass
 
-        class ScriptQuitCondition(Exception):
-            pass
-
-        print('NEW ORDER :', 'ALFA', '\n')
-        print('direction  :', direction)
-        print('para  :', para)
-        print('amount  :', amount)
-        print('price  :', price)
+        # print('NEW ORDER :', 'ALFA', '\n')
+        # print('direction  :', direction)
+        # print('para  :', para)
+        # print('amount  :', amount)
+        # print('price  :', price)
 
         order = {
             'type': direction,
@@ -137,193 +102,17 @@ def alfa(val1, val2, price, amount):
             'price': price
         }
 
-        def get_auth_headers(self, data):
-            msg = input1 + urlencode(sorted(data.items(), key=lambda val: val[0]))
-            sign = hmac.new(input2.encode(), msg.encode(), digestmod='sha256').hexdigest()
 
-            return {
-                'X-KEY': input1,
-                'X-SIGN': sign,
-                'X-NONCE': str(int(time() * 1000)),
-            }
+        msg = input1 + urlencode(sorted(order.items(), key=lambda val: val[0]))
+        sign = hmac.new(input2.encode(), msg.encode(), digestmod='sha256').hexdigest()
 
-        response = requests.post('https://btc-alpha.com/api/v1/order/', data=order, headers=get_auth_headers({}, order))
-
-        def resm():
-            try:
-                # Полученный ответ переводим в строку UTF, и пытаемся преобразовать из текста в объект Python
-                obj = json.loads(response.text)
-                # Смотрим, есть ли в полученном объекте ключ "error"
-                if 'error' in obj and obj['error']:
-                    # nl = '\n'
-                    # bot_sendtext2(
-                    #     f" BIRGA ALFA -: {nl} {obj} {nl} {order}")
-                    return obj['error']
-                    # Если есть, выдать ошибку, код дальше выполняться не будет
-                    # raise ScriptError(obj['error'])
-                # Вернуть полученный объект как результат работы ф-ции
-                # nl = '\n'
-                # bot_sendtext2(
-                #     f" BIRGA ALFA +: {nl} {obj} {nl} {order}")
-                try:
-                    gg = obj['oid']
-                except:
-                    gg = obj
-                return gg
-            except ValueError:
-                # Если не удалось перевести полученный ответ (вернулся не JSON)
-                return ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
-                # raise ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
-
-        return resm()
-
+        return {
+            'X-KEY': input1,
+            'X-SIGN': sign,
+            'X-NONCE': str(int(time() * 1000)),
+        }, order
     else:
-        return ["ОШИБКА"]
-
-########################     HOT    ##########################
-def hot(val1, val2, price, amount):
-  #####  direction  (buy  / sell)
-
-  if val1 == 'USD' or val1 == 'USDT' or val2 == 'USD' or val2 == 'USDT':
-      if val1 == 'USD' or val1 == 'USDT':
-          direction = 2
-          pass
-      else:
-          direction = 1
-          pass
-  elif val1 != 'USD' and val2 != 'USD' and val1 != 'USDT' and val2 != 'USDT':
-      if val1 == 'BTC':
-          direction = 2
-          pass
-      else:
-          direction = 1
-          pass
-
-  tickers_all = ['BTC/USD', 'BTC/USDT', 'PZM/USDT', 'ETH/USD', 'ETH/USDT', 'PZM/BTC', 'ETH/BTC']
-
-  parametr1 = "{}/{}".format(val1, val2)
-  parametr2 = "{}/{}".format(val2, val1)
-
-  for i in tickers_all:
-    if i == parametr1:
-      para = i
-      pass
-    elif i == parametr2:
-      para = i
-      pass
-
-  for i in rools['hot']['amount_precision']:
-        if para == i:
-            print('AMOUNT 1 ####', amount)
-
-            d = int(rools['hot']['amount_precision'][i])
-
-            def custom_round(number, ndigits=d):
-                return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
-
-            amount = custom_round(float(price))
-            print('AMOUNT 3 ####', amount)
-
-            pass
-        else:
-            pass
-  for i in rools['hot']['price_precision']:
-        if para == i:
-
-            print('PRICE  before ####', price)
-            d = rools['hot']['price_precision'][i]
-
-            def custom_round(number, ndigits=d):
-                return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
-
-            price = custom_round(price)
-            print('PRICE after ####', price)
-            pass
-        else:
-            pass
-
-  def keys():
-    if os.path.isfile(main_path_data + "\\keys.json"):
-      pass
-    else:
-
-      dictionary = {"1": {"key": "Api key",
-                          "api": "Api secret"},
-                    "2": {"key": "Api key",
-                          "api": "Api secret"},
-                    "3": {"key": "Api key",
-                          "api": "Api secret"},
-                    "4": {"key": "Chat id", "api": "Token"}}
-
-      keys1 = json.dumps(dictionary, indent=4)
-      with open(main_path_data + "\\keys.json", "w") as outfile:
-        outfile.write(keys1)
-        outfile.close()
-        pass
-  keys()
-
-  a_file = open(main_path_data + "\\keys.json", "r")
-  json_object = json.load(a_file)
-  a_file.close()
-
-  input1 = json_object["3"]['key']
-  input2 = json_object["3"]['api']
-
-
-  if input1 != "Api key" and input2 != "Api secret":
-      # Свой класс исключений
-      class ScriptError(Exception):
-          pass
-
-      class ScriptQuitCondition(Exception):
-          pass
-
-      print('\n', 'NEW ORDER :', 'HOT', '\n')
-      print('direction  :', direction)
-      print('para  :', para)
-      print('amount  :', amount)
-      print('price  :', price)
-
-      msg = "amount={}&api_key={}&isfee=0&market={}&price={}&side={}&secret_key={}".format(
-          amount, input1, para, price, direction, input2)
-
-      # print("####   MSG  :",msg)
-      sign = hashlib.md5(msg.encode()).hexdigest().upper()
-      url2 = 'https://api.hotbit.io/api/v1/order.put_limit?amount={}&api_key={}&isfee=0&market={}&price={}&side={}&sign={}'.format(amount, input1, para, price, direction,sign)
-
-      # print("####   url2  :", url2)
-
-      response = requests.request("GET", url2)
-      # exam2 = response.json()
-      def resm():
-        try:
-          # Полученный ответ переводим в строку UTF, и пытаемся преобразовать из текста в объект Python
-          obj = json.loads(response.text)
-          # print('obj :', obj)
-          # Смотрим, есть ли в полученном объекте ключ "error"
-          if 'error' in obj and obj['error']:
-            # nl = '\n'
-            # bot_sendtext2(f" BIRGA HOT -: {nl} {obj} {nl} {order}")
-            return obj['error']['message']
-            # Если есть, выдать ошибку, код дальше выполняться не будет
-            # raise ScriptError(obj['error'])
-          # Вернуть полученный объект как результат работы ф-ции
-          # nl = '\n'
-          # bot_sendtext2(
-          #     f" BIRGA HOT +: {nl} {obj}")
-          return obj['result']['id']
-        except ValueError:
-          # Если не удалось перевести полученный ответ (вернулся не JSON)
-          return ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
-          # raise ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
-
-      return resm()
-
-
-  else:
-    return ["ОШИБКА"]
-
-#######################     Live    ##########################
+        return {},{}
 def live(val1, val2, price, amount):
     #####  direction  (buy  / sell)
     if val1 == 'USD' or val1 == 'USDT' or val2 == 'USD' or val2 == 'USDT':
@@ -368,42 +157,25 @@ def live(val1, val2, price, amount):
             pass
     for i in rools['live']['price_precision']:
         if para == i:
-            # price = format(price, '.10f')
             print('PRICE  ####', price)
-            # price = Context(prec=(rools['live']['price_precision'][i] + 1), rounding=ROUND_DOWN).create_decimal(price)
-            # price = float(price)
 
             d = rools['live']['price_precision'][i]
+            def chop_to_n_decimals(x, n):
 
-            def custom_round(number, ndigits=d):
-                return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
+                tre = decimal.Decimal(repr(x))
+                targetdigit = decimal.Decimal("1e%d" % -n)
+                chopped = tre.quantize(targetdigit, decimal.ROUND_DOWN)
+                return float(chopped)
 
-            price = custom_round(float(price))
+            price = chop_to_n_decimals(float(price), d)
+            # def custom_round(number, ndigits=d):
+            #     return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
+            #
+            # price = custom_round(float(price))
             print('PRICE  ####', price)
             pass
         else:
             pass
-
-    def keys():
-        if os.path.isfile(main_path_data + "\\keys.json"):
-            pass
-        else:
-
-            dictionary = {"1": {"key": "Api key",
-                                "api": "Api secret"},
-                          "2": {"key": "Api key",
-                                "api": "Api secret"},
-                          "3": {"key": "Api key",
-                                "api": "Api secret"},
-                          "4": {"key": "Chat id", "api": "Token"}}
-
-            keys1 = json.dumps(dictionary, indent=4)
-            with open(main_path_data + "\\keys.json", "w") as outfile:
-                outfile.write(keys1)
-                outfile.close()
-                pass
-
-    keys()
 
     a_file = open(main_path_data + "\\keys.json", "r")
     json_object = json.load(a_file)
@@ -413,78 +185,783 @@ def live(val1, val2, price, amount):
     input2 = json_object["2"]['api']
 
 
-    if input1 != "Api key" and input2 != "Api secret":
-        # Свой класс исключений
-        class ScriptError(Exception):
-            pass
-
-        class ScriptQuitCondition(Exception):
-            pass
-
-        print('\n', '----NEW ORDER :', 'LIVE-----', '\n')
-        print('direction  :', direction)
-        print('para  :', para)
-        print('amount  :', amount)
-        print('price  :', price)
-
-        order = {
-            'currencyPair': para,
-            'quantity': str(amount),
-            'price': price
-        }
-        order2 = urlencode(sorted(order.items(), key=lambda val: val[0]))
-
-        def get_auth_headers(self, data):
-            # msg = input1 + urlencode(sorted(data.items(), key=lambda val: val[0]))
-            msg = urlencode(sorted(data.items(), key=lambda val: val[0]))
-            sign = hmac.new(input2.encode(), msg=msg.encode(), digestmod='sha256').hexdigest().upper()
-
-            return {
-                'Api-key': input1,
-                'Sign': sign,
-                "Content-type": "application/x-www-form-urlencoded"
-            }
+    order = {
+        'currencyPair': para,
+        'quantity': str(amount),
+        'price': price
+    }
+    # order2 = urlencode(sorted(order.items(), key=lambda val: val[0]))
 
 
-        if direction == 'sell':
-            response = requests.post('https://api.livecoin.net/exchange/selllimit', data=order2,
-                                     headers=get_auth_headers({}, order))
-        #     /exchange/selllimit   /exchange/buylimit
+    msg = urlencode(sorted(order.items(), key=lambda val: val[0]))
+    sign = hmac.new(input2.encode(), msg=msg.encode(), digestmod='sha256').hexdigest().upper()
 
-        else:
-            response = requests.post('https://api.livecoin.net/exchange/buylimit', data=order2,
-                                     headers=get_auth_headers({}, order))
-
-        def resm():
-            try:
-                # Полученный ответ переводим в строку UTF, и пытаемся преобразовать из текста в объект Python
-                obj = json.loads(response.text)
-
-                # print("1", obj)
-                # print("2", obj['success'])
-
-                # Смотрим, есть ли в полученном объекте ключ "error"
-                if obj['success'] == False:
-                    # nl = '\n'
-                    # bot_sendtext2(
-                    #     f" BIRGA LIVE -: {nl} {obj} {nl} {order}")
-                    return obj['exception']
-                    # Если есть, выдать ошибку, код дальше выполняться не будет
-                    # raise ScriptError(obj['error'])
-                # Вернуть полученный объект как результат работы ф-ции
-                # nl = '\n'
-                # bot_sendtext2(
-                #     f" BIRGA LIVE +: {nl} {obj} {nl} {order}")
-                return obj['orderId']
-            except ValueError:
-                # Если не удалось перевести полученный ответ (вернулся не JSON)
-                return ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
-                # raise ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
-
-        return resm()
-
+    if direction == 'sell':
+        url = 'https://api.livecoin.net/exchange/selllimit'
     else:
-        return ["ОШИБКА"]
+        url = 'https://api.livecoin.net/exchange/buylimit'
+
+    return {
+        'Api-key': input1,
+        'Sign': sign,
+        "Content-type": "application/x-www-form-urlencoded"
+    }, order, url
+def hot(val1, val2, price, amount):
+    import hashlib
+    if val1 == 'USD' or val1 == 'USDT' or val2 == 'USD' or val2 == 'USDT':
+      if val1 == 'USD' or val1 == 'USDT':
+          direction = 2
+          pass
+      else:
+          direction = 1
+          pass
+    elif val1 != 'USD' and val2 != 'USD' and val1 != 'USDT' and val2 != 'USDT':
+      if val1 == 'BTC':
+          direction = 2
+          pass
+      else:
+          direction = 1
+          pass
+
+    tickers_all = ['BTC/USD', 'BTC/USDT', 'PZM/USDT', 'ETH/USD', 'ETH/USDT', 'PZM/BTC', 'ETH/BTC']
+
+    parametr1 = "{}/{}".format(val1, val2)
+    parametr2 = "{}/{}".format(val2, val1)
+
+    for i in tickers_all:
+        if i == parametr1:
+          para = i
+          pass
+        elif i == parametr2:
+          para = i
+          pass
+
+    for i in rools['hot']['amount_precision']:
+        if para == i:
+            print('AMOUNT 1 ####', amount)
+
+            d = int(rools['hot']['amount_precision'][i])
+
+            def custom_round(number, ndigits=d):
+                return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
+
+            amount = custom_round(float(amount))
+            print('AMOUNT 3 ####', amount)
+
+            pass
+        else:
+            pass
+    for i in rools['hot']['price_precision']:
+        if para == i:
+
+            print('PRICE  before ####', price)
+            d = rools['hot']['price_precision'][i]
+
+            def chop_to_n_decimals(x, n):
+
+                tre = decimal.Decimal(repr(x))
+                targetdigit = decimal.Decimal("1e%d" % -n)
+                chopped = tre.quantize(targetdigit, decimal.ROUND_DOWN)
+                return float(chopped)
+
+            price = str(chop_to_n_decimals(float(price), d))
+            print('PRICE after ####', price)
+            pass
+        else:
+            pass
+
+    a_file = open(main_path_data + "\\keys.json", "r")
+    json_object = json.load(a_file)
+    a_file.close()
+
+    input1 = json_object["3"]['key']
+    input2 = json_object["3"]['api']
+
+
+    if input1 != "Api key" and input2 != "Api secret":
+      # Свой класс исключений
+      class ScriptError(Exception):
+          pass
+
+      class ScriptQuitCondition(Exception):
+          pass
+
+      print('\n', 'NEW ORDER :', 'HOT', '\n')
+      print('direction  :', direction)
+      print('para  :', para)
+      print('amount  :', amount)
+      print('price  :', price)
+
+      msg = "amount={}&api_key={}&isfee=0&market={}&price={}&side={}&secret_key={}".format(
+          amount, input1, para, price, direction, input2)
+
+
+      sign = hashlib.md5(msg.encode()).hexdigest().upper()
+      url = 'https://api.hotbit.io/api/v1/order.put_limit?amount={}&api_key={}&isfee=0&market={}&price={}&side={}&sign={}'.format(amount, input1, para, price, direction,sign)
+
+
+      return url
+    else:
+      return ''
+
+
+    ####################################################################################
+
+
+
+
+
+def kurs_al(birka, val1, val2, rate1, val2_vol, val3, val4, rate2, val3_vol):
+    out = dict()
+    CONNECTIONS = 100
+    TIMEOUT = 3
+
+
+    if birka == 1:
+        PARAMS_alfa = alfa(val1, val2, rate1, val2_vol)
+        PARAMS_live = live(val3, val4, rate2, val3_vol)
+    else:
+        PARAMS_live = live(val1, val2, rate1, val2_vol)
+        PARAMS_alfa = alfa(val3, val4, rate2, val3_vol)
+
+
+    a_order = PARAMS_alfa[1]
+    a_sign = PARAMS_alfa[0]
+    l_order = PARAMS_live[1]
+    l_sign = PARAMS_live[0]
+    url_l = PARAMS_live[2]
+
+    urls = [
+        url_l,
+        'https://btc-alpha.com/api/v1/order/'
+    ]
+
+    def load_url(url, timeout, a_sign, a_order, l_sign,l_order):
+        if 'alpha.com/api/v1/order' in f'**{url}**':
+            ans = requests.post(url, data=a_order, headers=a_sign, timeout=timeout)
+            ans = ans.json()
+            if 'error' in ans and ans['error']:
+                return 'alfa', ans['error']
+            else:
+                return 'alfa', ans['oid']
+        elif 'hotbit.io/api/v1/order' in f'**{url}**':
+            ans = requests.get(url, timeout=timeout)
+            ans = ans.json()
+            if 'error' in ans and ans['error']:
+                return 'hot', ans['error']['message']
+            else:
+                return 'hot', ans['result']['id']
+        elif 'api.livecoin.net/exchange' in f'**{url}**':
+            ans = requests.post(url, data=l_order, headers=l_sign, timeout=timeout)
+            ans = ans.json()
+            if ans['success'] == False:
+                return 'live', ans['exception']
+            else:
+                return 'live', ans['orderId']
+        else:
+            return
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=CONNECTIONS) as executor:
+        future_to_url = (executor.submit(load_url, url, TIMEOUT, a_sign, a_order, l_sign,l_order) for url in urls)
+
+        for future in concurrent.futures.as_completed(future_to_url):
+            try:
+                data = future.result()
+                print('22 : ', data)
+            except Exception as exc:
+                data = str(type(exc))
+                print('33 : ', data)
+            finally:
+                out.update({data[0]:data[1]})
+
+    return out
+
+def kurs_ah(birka, val1, val2, rate1, val2_vol, val3, val4, rate2, val3_vol):
+    out = dict()
+    CONNECTIONS = 100
+    TIMEOUT = 3
+
+    if birka == 1:
+        PARAMS_alfa = alfa(val1, val2, rate1, val2_vol)
+        PARAMS_hot = hot(val3, val4, rate2, val3_vol)
+    else:
+        PARAMS_hot = hot(val1, val2, rate1, val2_vol)
+        PARAMS_alfa = alfa(val3, val4, rate2, val3_vol)
+
+    a_order = PARAMS_alfa[1]
+    a_sign = PARAMS_alfa[0]
+
+    urls = [
+        PARAMS_hot,
+        'https://btc-alpha.com/api/v1/order/'
+    ]
+
+
+    def load_url(url, timeout, a_sign, a_order):
+        if 'alpha.com/api/v1/order' in f'**{url}**':
+            ans = requests.post(url, data=a_order, headers=a_sign, timeout=timeout)
+            ans = ans.json()
+            if 'error' in ans and ans['error']:
+                return 'alfa', ans['error']
+            else:
+                return 'alfa', ans['oid']
+        elif 'hotbit.io/api/v1/order' in f'**{url}**':
+            ans = requests.get(url, timeout=timeout)
+            ans = ans.json()
+            if 'error' in ans and ans['error']:
+                return 'hot', ans['error']['message']
+            else:
+                return 'hot', ans['result']['id']
+        else:
+            return
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=CONNECTIONS) as executor:
+        future_to_url = (executor.submit(load_url, url, TIMEOUT, a_sign, a_order) for url in urls)
+
+        for future in concurrent.futures.as_completed(future_to_url):
+            try:
+                data = future.result()
+                print('22 : ', data)
+            except Exception as exc:
+                data = str(type(exc))
+                print('33 : ', data)
+            finally:
+                out.update({data[0]:data[1]})
+
+    return out
+
+def kurs_hl(birka, val1, val2, rate1, val2_vol, val3, val4, rate2, val3_vol):
+    out = dict()
+    CONNECTIONS = 100
+    TIMEOUT = 3
+
+    if birka == 1:
+        PARAMS_hot = hot(val1, val2, rate1, val2_vol)
+        PARAMS_live = live(val3, val4, rate2, val3_vol)
+    else:
+        PARAMS_live = live(val1, val2, rate1, val2_vol)
+        PARAMS_hot = hot(val3, val4, rate2, val3_vol)
+
+    l_order = PARAMS_live[1]
+    l_sign = PARAMS_live[0]
+    url_l = PARAMS_live[2]
+
+    urls = [
+        PARAMS_hot,
+        url_l
+    ]
+
+    def load_url(url, timeout, l_sign,l_order):
+        if 'hotbit.io/api/v1/order' in f'**{url}**':
+            ans = requests.get(url, timeout=timeout)
+            ans = ans.json()
+            if 'error' in ans and ans['error']:
+                return 'hot', ans['error']['message']
+            else:
+                return 'hot', ans['result']['id']
+        elif 'api.livecoin.net/exchange' in f'**{url}**':
+            ans = requests.post(url, data=l_order, headers=l_sign, timeout=timeout)
+            ans = ans.json()
+            if ans['success'] == False:
+                return 'live', ans['exception']
+            else:
+                return 'live', ans['orderId']
+        else:
+            return
+
+    with concurrent.futures.ThreadPoolExecutor(max_workers=CONNECTIONS) as executor:
+        future_to_url = (executor.submit(load_url, url, TIMEOUT, l_sign,l_order) for url in urls)
+
+        for future in concurrent.futures.as_completed(future_to_url):
+            try:
+                data = future.result()
+                # print('22 : ', data)
+            except Exception as exc:
+                data = str(type(exc))
+                # print('33 : ', data)
+            finally:
+                out.update({data[0]:data[1]})
+
+    return out
+
+
+
+# ########################     ALFA    ##########################
+# def alfa(val1, val2, price, amount):
+#     #####  direction  (buy  / sell)
+#     from time import time
+#
+#     if val1 == 'USD' or val1 == 'USDT' or val2 == 'USD' or val2 == 'USDT':
+#         if val1 == 'USD' or val1 == 'USDT':
+#             direction = "buy"
+#             pass
+#         else:
+#             direction = "sell"
+#             pass
+#     elif val1 != 'USD' and val2 != 'USD' and val1 != 'USDT' and val2 != 'USDT':
+#         if val1 == 'BTC':
+#             direction = "buy"
+#             pass
+#         else:
+#             direction = "sell"
+#             pass
+#
+#
+#
+#     tickers_all = ['BTC_USD', 'PZM_USD', 'ETH_USD', 'ETH_USDT', 'PZM_BTC', 'ETH_BTC']
+#
+#     parametr1 = "{}_{}".format(val1, val2)
+#     parametr2 = "{}_{}".format(val2, val1)
+#
+#     for i in tickers_all:
+#         if i == parametr1:
+#             para = i
+#             pass
+#         elif i == parametr2:
+#             para = i
+#             pass
+#
+#     for i in rools['alfa']['amount_precision']:
+#         if para == i:
+#
+#             print('AMOUNT 1 ####', amount)
+#
+#             d = int(rools['alfa']['amount_precision'][i])
+#
+#             def custom_round(number, ndigits=d):
+#                 return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
+#
+#             amount = custom_round(amount)
+#             print('AMOUNT 3 ####', amount)
+#             pass
+#         else:
+#             pass
+#     for i in rools['alfa']['price_precision']:
+#         if para == i:
+#
+#
+#             d = rools['alfa']['price_precision'][i]
+#
+#
+#             def chop_to_n_decimals(x, n):
+#
+#                 tre = decimal.Decimal(repr(x))
+#                 targetdigit = decimal.Decimal("1e%d" % -n)
+#                 chopped = tre.quantize(targetdigit, decimal.ROUND_DOWN)
+#                 return float(chopped)
+#
+#             price = str(chop_to_n_decimals(float(price), d))
+#             print('PRICE after ####', price)
+#             pass
+#         else:
+#             pass
+#
+#
+#     def keys():
+#         if os.path.isfile(main_path_data + "\\keys.json"):
+#             pass
+#         else:
+#
+#             dictionary = {"1": {"key": "Api key",
+#                                 "api": "Api secret"},
+#                           "2": {"key": "Api key",
+#                                 "api": "Api secret"},
+#                           "3": {"key": "Api key",
+#                                 "api": "Api secret"},
+#                           "4": {"key": "Chat id", "api": "Token"}}
+#
+#             keys1 = json.dumps(dictionary, indent=4)
+#             with open(main_path_data + "\\keys.json", "w") as outfile:
+#                 outfile.write(keys1)
+#                 outfile.close()
+#                 pass
+#
+#     keys()
+#
+#     a_file = open(main_path_data + "\\keys.json", "r")
+#     json_object = json.load(a_file)
+#     a_file.close()
+#
+#     input1 = json_object["1"]['key']
+#     input2 = json_object["1"]['api']
+#
+#     if input1 != "Api key" and input2 != "Api secret":
+#         # Свой класс исключений
+#         class ScriptError(Exception):
+#             pass
+#
+#         class ScriptQuitCondition(Exception):
+#             pass
+#
+#         print('NEW ORDER :', 'ALFA', '\n')
+#         print('direction  :', direction)
+#         print('para  :', para)
+#         print('amount  :', amount)
+#         print('price  :', price)
+#
+#         order = {
+#             'type': direction,
+#             'pair': para,
+#             'amount': str(amount),
+#             'price': price
+#         }
+#
+#         def get_auth_headers(self, data):
+#             msg = input1 + urlencode(sorted(data.items(), key=lambda val: val[0]))
+#             sign = hmac.new(input2.encode(), msg.encode(), digestmod='sha256').hexdigest()
+#
+#             return {
+#                 'X-KEY': input1,
+#                 'X-SIGN': sign,
+#                 'X-NONCE': str(int(time() * 1000)),
+#             }
+#
+#         response = requests.post('https://btc-alpha.com/api/v1/order/', data=order, headers=get_auth_headers({}, order))
+#
+#         def resm():
+#             try:
+#                 # Полученный ответ переводим в строку UTF, и пытаемся преобразовать из текста в объект Python
+#                 obj = json.loads(response.text)
+#                 # Смотрим, есть ли в полученном объекте ключ "error"
+#                 if 'error' in obj and obj['error']:
+#                     # nl = '\n'
+#                     # bot_sendtext2(
+#                     #     f" BIRGA ALFA -: {nl} {obj} {nl} {order}")
+#                     return obj['error']
+#                     # Если есть, выдать ошибку, код дальше выполняться не будет
+#                     # raise ScriptError(obj['error'])
+#                 # Вернуть полученный объект как результат работы ф-ции
+#                 # nl = '\n'
+#                 # bot_sendtext2(
+#                 #     f" BIRGA ALFA +: {nl} {obj} {nl} {order}")
+#                 try:
+#                     gg = obj['oid']
+#                 except:
+#                     gg = obj
+#                 return gg
+#             except ValueError:
+#                 # Если не удалось перевести полученный ответ (вернулся не JSON)
+#                 return ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
+#                 # raise ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
+#
+#         return resm()
+#
+#     else:
+#         return ["ОШИБКА"]
+#
+# ########################     HOT    ##########################
+# def hot(val1, val2, price, amount):
+#   #####  direction  (buy  / sell)
+#
+#   if val1 == 'USD' or val1 == 'USDT' or val2 == 'USD' or val2 == 'USDT':
+#       if val1 == 'USD' or val1 == 'USDT':
+#           direction = 2
+#           pass
+#       else:
+#           direction = 1
+#           pass
+#   elif val1 != 'USD' and val2 != 'USD' and val1 != 'USDT' and val2 != 'USDT':
+#       if val1 == 'BTC':
+#           direction = 2
+#           pass
+#       else:
+#           direction = 1
+#           pass
+#
+#   tickers_all = ['BTC/USD', 'BTC/USDT', 'PZM/USDT', 'ETH/USD', 'ETH/USDT', 'PZM/BTC', 'ETH/BTC']
+#
+#   parametr1 = "{}/{}".format(val1, val2)
+#   parametr2 = "{}/{}".format(val2, val1)
+#
+#   for i in tickers_all:
+#     if i == parametr1:
+#       para = i
+#       pass
+#     elif i == parametr2:
+#       para = i
+#       pass
+#
+#   for i in rools['hot']['amount_precision']:
+#         if para == i:
+#             print('AMOUNT 1 ####', amount)
+#
+#             d = int(rools['hot']['amount_precision'][i])
+#
+#             def custom_round(number, ndigits=d):
+#                 return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
+#
+#             amount = custom_round(float(amount))
+#             print('AMOUNT 3 ####', amount)
+#
+#             pass
+#         else:
+#             pass
+#   for i in rools['hot']['price_precision']:
+#         if para == i:
+#
+#             print('PRICE  before ####', price)
+#             d = rools['hot']['price_precision'][i]
+#
+#             def chop_to_n_decimals(x, n):
+#
+#                 tre = decimal.Decimal(repr(x))
+#                 targetdigit = decimal.Decimal("1e%d" % -n)
+#                 chopped = tre.quantize(targetdigit, decimal.ROUND_DOWN)
+#                 return float(chopped)
+#
+#             price = str(chop_to_n_decimals(float(price), d))
+#             print('PRICE after ####', price)
+#             pass
+#         else:
+#             pass
+#
+#   def keys():
+#     if os.path.isfile(main_path_data + "\\keys.json"):
+#       pass
+#     else:
+#
+#       dictionary = {"1": {"key": "Api key",
+#                           "api": "Api secret"},
+#                     "2": {"key": "Api key",
+#                           "api": "Api secret"},
+#                     "3": {"key": "Api key",
+#                           "api": "Api secret"},
+#                     "4": {"key": "Chat id", "api": "Token"}}
+#
+#       keys1 = json.dumps(dictionary, indent=4)
+#       with open(main_path_data + "\\keys.json", "w") as outfile:
+#         outfile.write(keys1)
+#         outfile.close()
+#         pass
+#   keys()
+#
+#   a_file = open(main_path_data + "\\keys.json", "r")
+#   json_object = json.load(a_file)
+#   a_file.close()
+#
+#   input1 = json_object["3"]['key']
+#   input2 = json_object["3"]['api']
+#
+#
+#   if input1 != "Api key" and input2 != "Api secret":
+#       # Свой класс исключений
+#       class ScriptError(Exception):
+#           pass
+#
+#       class ScriptQuitCondition(Exception):
+#           pass
+#
+#       print('\n', 'NEW ORDER :', 'HOT', '\n')
+#       print('direction  :', direction)
+#       print('para  :', para)
+#       print('amount  :', amount)
+#       print('price  :', price)
+#
+#       msg = "amount={}&api_key={}&isfee=0&market={}&price={}&side={}&secret_key={}".format(
+#           amount, input1, para, price, direction, input2)
+#
+#       # print("####   MSG  :",msg)
+#       sign = hashlib.md5(msg.encode()).hexdigest().upper()
+#       url2 = 'https://api.hotbit.io/api/v1/order.put_limit?amount={}&api_key={}&isfee=0&market={}&price={}&side={}&sign={}'.format(amount, input1, para, price, direction,sign)
+#
+#       # print("####   url2  :", url2)
+#
+#       response = requests.request("GET", url2)
+#       # exam2 = response.json()
+#       def resm():
+#         try:
+#           # Полученный ответ переводим в строку UTF, и пытаемся преобразовать из текста в объект Python
+#           obj = json.loads(response.text)
+#           # print('obj :', obj)
+#           # Смотрим, есть ли в полученном объекте ключ "error"
+#           if 'error' in obj and obj['error']:
+#             # nl = '\n'
+#             # bot_sendtext2(f" BIRGA HOT -: {nl} {obj} {nl} {order}")
+#             return obj['error']['message']
+#             # Если есть, выдать ошибку, код дальше выполняться не будет
+#             # raise ScriptError(obj['error'])
+#           # Вернуть полученный объект как результат работы ф-ции
+#           # nl = '\n'
+#           # bot_sendtext2(
+#           #     f" BIRGA HOT +: {nl} {obj}")
+#           return obj['result']['id']
+#         except ValueError:
+#           # Если не удалось перевести полученный ответ (вернулся не JSON)
+#           return ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
+#           # raise ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
+#
+#       return resm()
+#
+#
+#   else:
+#     return ["ОШИБКА"]
+#
+# #######################     Live    ##########################
+# def live(val1, val2, price, amount):
+#     #####  direction  (buy  / sell)
+#     if val1 == 'USD' or val1 == 'USDT' or val2 == 'USD' or val2 == 'USDT':
+#         if val1 == 'USD' or val1 == 'USDT':
+#             direction = "buy"
+#             pass
+#         else:
+#             direction = "sell"
+#             pass
+#     elif val1 != 'USD' and val2 != 'USD' and val1 != 'USDT' and val2 != 'USDT':
+#         if val1 == 'BTC':
+#             direction = "buy"
+#             pass
+#         else:
+#             direction = "sell"
+#             pass
+#
+#     tickers_all = ['BTC/USD', 'PZM/USD', 'PZM/USDT', 'ETH/USD', 'ETH/USDT', 'PZM/BTC', 'ETH/BTC']
+#
+#     parametr1 = "{}/{}".format(val1, val2)
+#     parametr2 = "{}/{}".format(val2, val1)
+#
+#     for i in tickers_all:
+#         if i == parametr1:
+#             para = i
+#             pass
+#         elif i == parametr2:
+#             para = i
+#             pass
+#
+#     for i in rools['live']['amount_precision']:
+#         if para == i:
+#             print('AMOUNT  ####', amount)
+#             d = int(rools['live']['amount_precision'][i])
+#             def custom_round(number, ndigits=d):
+#                 return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
+#
+#             amount = custom_round(amount)
+#             print('AMOUNT  ####', amount)
+#             pass
+#         else:
+#             pass
+#     for i in rools['live']['price_precision']:
+#         if para == i:
+#             print('PRICE  ####', price)
+#
+#             d = rools['live']['price_precision'][i]
+#             def chop_to_n_decimals(x, n):
+#
+#                 tre = decimal.Decimal(repr(x))
+#                 targetdigit = decimal.Decimal("1e%d" % -n)
+#                 chopped = tre.quantize(targetdigit, decimal.ROUND_DOWN)
+#                 return float(chopped)
+#
+#             price = chop_to_n_decimals(float(price), d)
+#             # def custom_round(number, ndigits=d):
+#             #     return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
+#             #
+#             # price = custom_round(float(price))
+#             print('PRICE  ####', price)
+#             pass
+#         else:
+#             pass
+#
+#     def keys():
+#         if os.path.isfile(main_path_data + "\\keys.json"):
+#             pass
+#         else:
+#
+#             dictionary = {"1": {"key": "Api key",
+#                                 "api": "Api secret"},
+#                           "2": {"key": "Api key",
+#                                 "api": "Api secret"},
+#                           "3": {"key": "Api key",
+#                                 "api": "Api secret"},
+#                           "4": {"key": "Chat id", "api": "Token"}}
+#
+#             keys1 = json.dumps(dictionary, indent=4)
+#             with open(main_path_data + "\\keys.json", "w") as outfile:
+#                 outfile.write(keys1)
+#                 outfile.close()
+#                 pass
+#
+#     keys()
+#
+#     a_file = open(main_path_data + "\\keys.json", "r")
+#     json_object = json.load(a_file)
+#     a_file.close()
+#
+#     input1 = json_object["2"]['key']
+#     input2 = json_object["2"]['api']
+#
+#
+#     if input1 != "Api key" and input2 != "Api secret":
+#         # Свой класс исключений
+#         class ScriptError(Exception):
+#             pass
+#
+#         class ScriptQuitCondition(Exception):
+#             pass
+#
+#         print('\n', '----NEW ORDER :', 'LIVE-----', '\n')
+#         print('direction  :', direction)
+#         print('para  :', para)
+#         print('amount  :', amount)
+#         print('price  :', price)
+#
+#         order = {
+#             'currencyPair': para,
+#             'quantity': str(amount),
+#             'price': price
+#         }
+#         order2 = urlencode(sorted(order.items(), key=lambda val: val[0]))
+#
+#         def get_auth_headers(self, data):
+#             # msg = input1 + urlencode(sorted(data.items(), key=lambda val: val[0]))
+#             msg = urlencode(sorted(data.items(), key=lambda val: val[0]))
+#             sign = hmac.new(input2.encode(), msg=msg.encode(), digestmod='sha256').hexdigest().upper()
+#
+#             return {
+#                 'Api-key': input1,
+#                 'Sign': sign,
+#                 "Content-type": "application/x-www-form-urlencoded"
+#             }
+#
+#
+#         if direction == 'sell':
+#             response = requests.post('https://api.livecoin.net/exchange/selllimit', data=order2,
+#                                      headers=get_auth_headers({}, order))
+#         #     /exchange/selllimit   /exchange/buylimit
+#
+#         else:
+#             response = requests.post('https://api.livecoin.net/exchange/buylimit', data=order2,
+#                                      headers=get_auth_headers({}, order))
+#
+#         def resm():
+#             try:
+#                 # Полученный ответ переводим в строку UTF, и пытаемся преобразовать из текста в объект Python
+#                 obj = json.loads(response.text)
+#
+#                 # print("1", obj)
+#                 # print("2", obj['success'])
+#
+#                 # Смотрим, есть ли в полученном объекте ключ "error"
+#                 if obj['success'] == False:
+#                     # nl = '\n'
+#                     # bot_sendtext2(
+#                     #     f" BIRGA LIVE -: {nl} {obj} {nl} {order}")
+#                     return obj['exception']
+#                     # Если есть, выдать ошибку, код дальше выполняться не будет
+#                     # raise ScriptError(obj['error'])
+#                 # Вернуть полученный объект как результат работы ф-ции
+#                 # nl = '\n'
+#                 # bot_sendtext2(
+#                 #     f" BIRGA LIVE +: {nl} {obj} {nl} {order}")
+#                 return obj['orderId']
+#             except ValueError:
+#                 # Если не удалось перевести полученный ответ (вернулся не JSON)
+#                 return ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
+#                 # raise ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
+#
+#         return resm()
+#
+#     else:
+#         return ["ОШИБКА"]
 
 
 def bot_sendtext(bot_message):
@@ -547,88 +1024,175 @@ def all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol
     return
 def order(regims, birga_1, birga_2, val1_vol, val1, rate1, val2_vol, val2, val3_vol, val3, rate2, val4_vol, val4):
     while True:
-            if birga_1 == 'alfa' and birga_2 == 'live':
-                if val2 != 'USD' and val2 != 'USDT':
-                    reponse_b1 = alfa(val1, val2, rate1, val2_vol)
-                    reponse_b2 = live(val3, val4, rate2, val3_vol)
-                    all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                            reponse_b1, reponse_b2, regims)
-                    break
-                else:
-                    reponse_b1 = alfa(val1, val2, rate1, val1_vol)
-                    reponse_b2 = live(val3, val4, rate2, val4_vol)
-                    all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                            reponse_b1, reponse_b2, regims)
-                    break
-            elif birga_1 == 'live' and birga_2 == 'alfa':
-                if val2 != 'USD' and val2 != 'USDT':
-                    reponse_b1 = live(val1, val2, rate1, val2_vol)
-                    reponse_b2 = alfa(val3, val4, rate2, val3_vol)
-                    all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                            reponse_b1, reponse_b2, regims)
-                    break
-                else:
-                    reponse_b1 = live(val1, val2, rate1, val1_vol)
-                    reponse_b2 = alfa(val3, val4, rate2, val4_vol)
-                    all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                            reponse_b1, reponse_b2, regims)
-                    break
-            elif birga_1 == 'alfa' and birga_2 == 'hot':
-                if val2 != 'USD' and val2 != 'USDT':
-                    reponse_b1 = alfa(val1, val2, rate1, val2_vol)
-                    reponse_b2 = hot(val3, val4, rate2, val3_vol)
-                    all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                            reponse_b1, reponse_b2, regims)
-                    break
-                else:
-                    reponse_b1 = alfa(val1, val2, rate1, val1_vol)
-                    reponse_b2 = hot(val3, val4, rate2, val4_vol)
-                    all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                            reponse_b1, reponse_b2, regims)
-                    break
-            elif birga_1 == 'hot' and birga_2 == 'alfa':
-                if val2 != 'USD' and val2 != 'USDT':
-                    reponse_b1 = hot(val1, val2, rate1, val2_vol)
-                    reponse_b2 = alfa(val3, val4, rate2, val3_vol)
-                    all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                            reponse_b1, reponse_b2, regims)
-                    break
-                else:
-                    reponse_b1 = hot(val1, val2, rate1, val1_vol)
-                    reponse_b2 = alfa(val3, val4, rate2, val4_vol)
-                    all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                            reponse_b1, reponse_b2, regims)
-                    break
-            elif birga_1 == 'hot' and birga_2 == 'live':
-                if val2 != 'USD' or 'USDT':
-                    reponse_b1 = hot(val1, val2, rate1, val2_vol)
-                    reponse_b2 = live(val3, val4, rate2, val3_vol)
-                    all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                            reponse_b1, reponse_b2, regims)
-                    break
-                else:
-                    reponse_b1 = hot(val1, val2, rate1, val1_vol)
-                    reponse_b2 = live(val3, val4, rate2, val4_vol)
-                    all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                            reponse_b1, reponse_b2, regims)
-                    break
-            elif birga_1 == 'live' and birga_2 == 'hot':
-                if val2 != 'USD' and val2 != 'USDT':
-                    reponse_b1 = live(val1, val2, rate1, val2_vol)
-                    reponse_b2 = hot(val3, val4, rate2, val3_vol)
-                    all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                            reponse_b1, reponse_b2, regims)
-                    break
-                else:
-                    reponse_b1 = live(val1, val2, rate1, val1_vol)
-                    reponse_b2 = hot(val3, val4, rate2, val4_vol)
-                    all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                            reponse_b1, reponse_b2, regims)
-                    break
-            else:
+        if birga_1 == 'alfa' and birga_2 == 'live':
+            if val2 != 'USD' and val2 != 'USDT':
+
+                repons = kurs_al(1, val1, val2, rate1, val2_vol, val3, val4, rate2, val3_vol)
+                dictionary2 = json.dumps(repons)
+                dictionary = json.loads(dictionary2)
+
+                reponse_b1 = dictionary['alfa']
+                reponse_b2 = dictionary['live']
+
                 all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
-                        "No Such Command", "No Such Command", regims)
+                        reponse_b1, reponse_b2, regims)
                 break
+            else:
+
+                repons = kurs_al(1, val1, val2, rate1, val1_vol, val3, val4, rate2, val4_vol)
+                dictionary2 = json.dumps(repons)
+                dictionary = json.loads(dictionary2)
+
+                reponse_b1 = dictionary['alfa']
+                reponse_b2 = dictionary['live']
+
+                # reponse_b1 = alfa(val1, val2, rate1, val1_vol)
+                # reponse_b2 = live(val3, val4, rate2, val4_vol)
+                all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
+                        reponse_b1, reponse_b2, regims)
+                break
+        elif birga_1 == 'live' and birga_2 == 'alfa':
+            if val2 != 'USD' and val2 != 'USDT':
+
+                repons = kurs_al(2, val1, val2, rate1, val2_vol, val3, val4, rate2, val3_vol)
+                dictionary2 = json.dumps(repons)
+                dictionary = json.loads(dictionary2)
+
+                reponse_b1 = dictionary['live']
+                reponse_b2 = dictionary['alfa']
+
+                all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
+                        reponse_b1, reponse_b2, regims)
+                break
+            else:
+
+                repons = kurs_al(2, val1, val2, rate1, val1_vol, val3, val4, rate2, val4_vol)
+                dictionary2 = json.dumps(repons)
+                dictionary = json.loads(dictionary2)
+
+                reponse_b1 = dictionary['live']
+                reponse_b2 = dictionary['alfa']
+                # reponse_b1 = live(val1, val2, rate1, val1_vol)
+                # reponse_b2 = alfa(val3, val4, rate2, val4_vol)
+                all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
+                        reponse_b1, reponse_b2, regims)
+                break
+        elif birga_1 == 'alfa' and birga_2 == 'hot':
+            if val2 != 'USD' and val2 != 'USDT':
+
+                repons = kurs_ah(1, val1, val2, rate1, val2_vol, val3, val4, rate2, val3_vol)
+                dictionary2 = json.dumps(repons)
+                dictionary = json.loads(dictionary2)
+
+                reponse_b1 = dictionary['alfa']
+                reponse_b2 = dictionary['hot']
+
+                # reponse_b1 = alfa(val1, val2, rate1, val2_vol)
+                # reponse_b2 = hot(val3, val4, rate2, val3_vol)
+                all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
+                        reponse_b1, reponse_b2, regims)
+                break
+            else:
+
+                repons = kurs_ah(1, val1, val2, rate1, val1_vol, val3, val4, rate2, val4_vol)
+                dictionary2 = json.dumps(repons)
+                dictionary = json.loads(dictionary2)
+
+                reponse_b1 = dictionary['alfa']
+                reponse_b2 = dictionary['hot']
+                # reponse_b1 = alfa(val1, val2, rate1, val1_vol)
+                # reponse_b2 = hot(val3, val4, rate2, val4_vol)
+                all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
+                        reponse_b1, reponse_b2, regims)
+                break
+        elif birga_1 == 'hot' and birga_2 == 'alfa':
+            if val2 != 'USD' and val2 != 'USDT':
+
+                repons = kurs_ah(2, val1, val2, rate1, val2_vol, val3, val4, rate2, val3_vol)
+                dictionary2 = json.dumps(repons)
+                dictionary = json.loads(dictionary2)
+
+                reponse_b1 = dictionary['hot']
+                reponse_b2 = dictionary['alfa']
+
+                # reponse_b1 = hot(val1, val2, rate1, val2_vol)
+                # reponse_b2 = alfa(val3, val4, rate2, val3_vol)
+                all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
+                        reponse_b1, reponse_b2, regims)
+                break
+            else:
+                repons = kurs_ah(2, val1, val2, rate1, val1_vol, val3, val4, rate2, val4_vol)
+                dictionary2 = json.dumps(repons)
+                dictionary = json.loads(dictionary2)
+
+                reponse_b1 = dictionary['hot']
+                reponse_b2 = dictionary['alfa']
+                # reponse_b1 = hot(val1, val2, rate1, val1_vol)
+                # reponse_b2 = alfa(val3, val4, rate2, val4_vol)
+                all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
+                        reponse_b1, reponse_b2, regims)
+                break
+        elif birga_1 == 'hot' and birga_2 == 'live':
+            if val2 != 'USD' or 'USDT':
+
+                repons = kurs_hl(1, val1, val2, rate1, val2_vol, val3, val4, rate2, val3_vol)
+                dictionary2 = json.dumps(repons)
+                dictionary = json.loads(dictionary2)
+
+                reponse_b1 = dictionary['hot']
+                reponse_b2 = dictionary['live']
+
+                # reponse_b1 = hot(val1, val2, rate1, val2_vol)
+                # reponse_b2 = live(val3, val4, rate2, val3_vol)
+                all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
+                        reponse_b1, reponse_b2, regims)
+                break
+            else:
+
+                repons = kurs_hl(1, val1, val2, rate1, val1_vol, val3, val4, rate2, val4_vol)
+                dictionary2 = json.dumps(repons)
+                dictionary = json.loads(dictionary2)
+
+                reponse_b1 = dictionary['hot']
+                reponse_b2 = dictionary['live']
+                # reponse_b1 = hot(val1, val2, rate1, val1_vol)
+                # reponse_b2 = live(val3, val4, rate2, val4_vol)
+                all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
+                        reponse_b1, reponse_b2, regims)
+                break
+        elif birga_1 == 'live' and birga_2 == 'hot':
+            if val2 != 'USD' and val2 != 'USDT':
+
+                repons = kurs_hl(2, val1, val2, rate1, val2_vol, val3, val4, rate2, val3_vol)
+                dictionary2 = json.dumps(repons)
+                dictionary = json.loads(dictionary2)
+
+                reponse_b1 = dictionary['live']
+                reponse_b2 = dictionary['hot']
+
+                # reponse_b1 = live(val1, val2, rate1, val2_vol)
+                # reponse_b2 = hot(val3, val4, rate2, val3_vol)
+                all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
+                        reponse_b1, reponse_b2, regims)
+                break
+            else:
+
+                repons = kurs_hl(2, val1, val2, rate1, val1_vol, val3, val4, rate2, val4_vol)
+                dictionary2 = json.dumps(repons)
+                dictionary = json.loads(dictionary2)
+
+                reponse_b1 = dictionary['live']
+                reponse_b2 = dictionary['hot']
+
+                # reponse_b1 = live(val1, val2, rate1, val1_vol)
+                # reponse_b2 = hot(val3, val4, rate2, val4_vol)
+                all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
+                        reponse_b1, reponse_b2, regims)
+                break
+        else:
+            all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol, val4_vol,
+                    "No Such Command", "No Such Command", regims)
+            break
 
 
 

@@ -112,9 +112,6 @@ def fast_refresh():
 
     final = final.drop(filter['index'], axis=0)
 
-
-
-
     final['rates_x'] = final['rates_x'].replace(',','', regex=True).apply(pd.to_numeric, errors='coerce')
     final['rates_y'] = final['rates_y'].replace(',','', regex=True).apply(pd.to_numeric, errors='coerce')
     final['volume_x'] = final['volume_x'].replace(',','', regex=True).apply(pd.to_numeric, errors='coerce')
@@ -149,7 +146,6 @@ def fast_refresh():
     reg2 = final
     final.loc[:,"volume"] = final[['volume_x','volume_y','Bal2','Bal1']].min(axis=1)
 
-
     final['volume'] = final['volume'].map('{:,.10f}'.format)
     final['volume'] = final['volume'].replace(',','', regex=True).apply(pd.to_numeric,errors='coerce')
 
@@ -158,12 +154,10 @@ def fast_refresh():
     final.loc[:,'Vol3'] = final['volume']
     final.loc[:,'Vol4'] = final['rates_y'] * final['volume'] - (final['rates_y'] * final['volume'] * final['Com_y'] / 100)
 
-
     fil_a = final[final['birga_x'] == 'alfa'].index
     final.loc[(fil_a), 'Vol3'] = final.loc[(fil_a), 'Vol2'] - (final.loc[(fil_a), 'Vol2'] * final.loc[(fil_a), 'Com_x'] / 100)
     final.loc[(fil_a), 'Vol1'] = final.loc[(fil_a), 'rates_x'] * final.loc[(fil_a), 'volume']
     final.loc[(fil_a), 'Vol4'] = final.loc[(fil_a), 'rates_y'] * final.loc[(fil_a),'Vol3'] - (final.loc[(fil_a), 'rates_y'] * final.loc[(fil_a),'Vol3'] * final['Com_y'] / 100)
-
 
     final['Vol1'] = final['Vol1'].map('{:,.10f}'.format)
     final['Vol2'] = final['Vol2'].map('{:,.10f}'.format)
@@ -175,54 +169,43 @@ def fast_refresh():
     final['Vol3'] = final['Vol3'].replace(',','', regex=True).apply(pd.to_numeric, errors='coerce')
     final['Vol4'] = final['Vol4'].replace(',','', regex=True).apply(pd.to_numeric, errors='coerce')
 
-
-
-
-
     final.loc[:,'profit'] = final['Vol4'] - final['Vol1']
     final.loc[:,'percent'] = final['profit'] / final['Vol1'] * 100
 
     final['profit'] = final['profit'].replace(',','', regex=True).apply(pd.to_numeric, errors='coerce')
     final['percent'] = final['percent'].replace(',','', regex=True).apply(pd.to_numeric, errors='coerce')
-
     dddd = final.dropna()
-
     final = dddd
     final = final[final['direction_y'] != 'buy']
     
     #################################################################################################
     
-    # reg2.loc[:,"volume"] = reg2[['volume_x','Bal2','Bal1']].min(axis=1)
-    #
-    #
-    # reg2.loc[:,'Vol1'] = reg2['rates_x'] * reg2['volume'] + (reg2['rates_x'] * reg2['volume'] * reg2['Com_x'] / 100)
-    # reg2.loc[:,'Vol2'] = reg2['volume']
-    # reg2.loc[:,'Vol3'] = reg2['volume']
-    # reg2.loc[:,'Vol4'] = reg2['rates_y'] * reg2['volume'] - (reg2['rates_y'] * reg2['volume'] * reg2['Com_y'] / 100)
-    #
-    #
-    # fil_a = reg2[reg2['birga_x'] == 'alfa'].index
-    # reg2.loc[(fil_a), 'Vol3'] = reg2.loc[(fil_a), 'Vol2'] - (reg2.loc[(fil_a), 'Vol2'] * reg2.loc[(fil_a), 'Com_x'] / 100)
-    # reg2.loc[(fil_a), 'Vol1'] = reg2.loc[(fil_a), 'rates_x'] * reg2.loc[(fil_a), 'volume']
-    # reg2.loc[(fil_a), 'Vol4'] = reg2.loc[(fil_a), 'rates_y'] * reg2.loc[(fil_a),'Vol3'] - (reg2.loc[(fil_a), 'rates_y'] * reg2.loc[(fil_a),'Vol3'] * reg2['Com_y'] / 100)
-    #
-    #
-    #
-    # reg2.loc[:,'profit'] = reg2['Vol4'] - reg2['Vol1']
-    # reg2.loc[:,'percent'] = reg2['profit'] / reg2['Vol1'] * 100
-    #
-    # reg2['profit'] = reg2['profit'].apply(pd.to_numeric, errors='coerce')
-    # reg2['percent'] = reg2['percent'].apply(pd.to_numeric, errors='coerce')
-    #
-    # # reg2 = reg2[reg2['Vol2'].notnull()]
+    reg2.loc[:,"volume"] = reg2[['volume_y','Bal2','Bal1']].min(axis=1)
+
+
+    reg2.loc[:,'Vol1'] = reg2['rates_x'] * reg2['volume'] + (reg2['rates_x'] * reg2['volume'] * reg2['Com_x'] / 100)
+    reg2.loc[:,'Vol2'] = reg2['volume']
+    reg2.loc[:,'Vol3'] = reg2['volume']
+    reg2.loc[:,'Vol4'] = reg2['rates_y'] * reg2['volume'] - (reg2['rates_y'] * reg2['volume'] * reg2['Com_y'] / 100)
+
+
+    fil_a = reg2[reg2['birga_x'] == 'alfa'].index
+    reg2.loc[(fil_a), 'Vol3'] = reg2.loc[(fil_a), 'Vol2'] - (reg2.loc[(fil_a), 'Vol2'] * reg2.loc[(fil_a), 'Com_x'] / 100)
+    reg2.loc[(fil_a), 'Vol1'] = reg2.loc[(fil_a), 'rates_x'] * reg2.loc[(fil_a), 'volume']
+    reg2.loc[(fil_a), 'Vol4'] = reg2.loc[(fil_a), 'rates_y'] * reg2.loc[(fil_a),'Vol3'] - (reg2.loc[(fil_a), 'rates_y'] * reg2.loc[(fil_a),'Vol3'] * reg2['Com_y'] / 100)
+
+    reg2.loc[:,'profit'] = reg2['Vol4'] - reg2['Vol1']
+    reg2.loc[:,'percent'] = reg2['profit'] / reg2['Vol1'] * 100
+
+    reg2['profit'] = reg2['profit'].apply(pd.to_numeric, errors='coerce')
+    reg2['percent'] = reg2['percent'].apply(pd.to_numeric, errors='coerce')
+
+    # reg2 = reg2[reg2['Vol2'].notnull()]
     # dddd33 = reg2.dropna()
     #
     # reg2 = dddd33
-    # reg2 = reg2[reg2['direction_y'] != 'buy']
-    #
-    # reg2.to_csv(main_path_data + "\\vilki_all.csv", header=True, index=False)
-    
-    
+    reg2 = reg2[reg2['direction_y'] != 'buy']
+    reg2.to_csv(main_path_data + "\\vilki_all.csv", header=True, index=False)
     #################################################################################################
 
     def regim_filter():
@@ -321,15 +304,15 @@ def fast_refresh():
                             filter1.iloc[0]['Vol4'],
                             filter1.iloc[0]['val3'])
             Balance.NewBalance()
-            file = open(second_path_data + "\\new_regims.json", "r")
-            data = json.load(file)
-            file.close()
-            for k, v in data.items():
-                v['avtomat'] = 'off'
-
-            f = open(second_path_data + "\\new_regims.json", "w")
-            json.dump(data, f)
-            f.close()
+            # file = open(second_path_data + "\\new_regims.json", "r")
+            # data = json.load(file)
+            # file.close()
+            # for k, v in data.items():
+            #     v['avtomat'] = 'off'
+            #
+            # f = open(second_path_data + "\\new_regims.json", "w")
+            # json.dump(data, f)
+            # f.close()
             time.sleep(1.1)
         else:
             pass

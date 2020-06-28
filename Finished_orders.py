@@ -28,7 +28,7 @@ def hot_w(para):
             'end_time': int(now),
             'offset': int(0),
             'limit': int(10),
-            'side': int(1),
+            'side': int(2),
         }
 
         L_b = {}
@@ -63,8 +63,8 @@ def hot_open(para):
         d ={
             'api_key': str(input_hot_key),
             'market': str(para),
-            'offset': int(0),
-            'limit': int(10),
+            'offset': int("0"),
+            'limit': int('10'),
         }
 
         L_b = {}
@@ -74,6 +74,8 @@ def hot_open(para):
 
         er = urlencode(L_b)
         er = er.replace('%2F','/')
+
+        # print(er)
         result = hashlib.md5(er.encode())
         sign = result.hexdigest().upper()
 
@@ -85,9 +87,10 @@ def hot_open(para):
         L_b2.update({'sign': sign})
 
         url = urlencode(L_b2)
+        # print(url)
 
         url = url.replace('%2F', '/')
-        url='https://api.hotbit.io/api/v1/order.pending?'+url
+        url = 'https://api.hotbit.io/api/v1/order.pending?'+url
 
         return url
     else:
@@ -95,7 +98,9 @@ def hot_open(para):
 def hot_finished(para, order_id):
     response = requests.request("GET", hot_w(para))
     obj = json.loads(response.text)
+    print('Checking HOT (finished orders) ...')
     check = []
+    # print('obj', obj)
     for i in obj['result']['records']:
         if i['id'] == int(order_id):
             check.append("yes")
@@ -103,24 +108,25 @@ def hot_finished(para, order_id):
             data = json.load(file)
             file.close()
             if str(i['id']) in data['hot']:
-                data['hot'][str(i['id'])] = i['amount']
+                data['hot'][str(i['id'])] = float(i['amount'])
             else:
-                data['hot'].update({str(i['id']): i['amount']})
+                data['hot'].update({str(i['id']): float(i['amount'])})
             f = open(s_path_data + "\\finished_orders.json", "w")
             json.dump(data, f)
             f.close()
         else:
             pass
     if not check:
+
         response = requests.request("GET", hot_open(para))
         obj = json.loads(response.text)
-        print('RESP :', obj)
+        print('Checking HOT (open orders) ...')
 
         file = open(s_path_data + "\\finished_orders.json", "r")
         data = json.load(file)
         file.close()
 
-        for k,v in obj['result']:
+        for k,v in obj['result'].items():
             if not v['records']:
                 pass
             else:
@@ -140,7 +146,6 @@ def hot_finished(para, order_id):
     else:
         pass
     return
-
 def live_finished(para, order_id):
     import hmac
     import json
@@ -246,11 +251,11 @@ def alfa_finished(Vol3,order_id):
         response = requests.get('https://btc-alpha.com/api/v1/orders/own/', headers=get_auth_headers({}))
         obj = json.loads(response.text)
         obj = obj[:10]
-        print(obj)
+        # print(obj)
 
 
         for i in obj:
-            if i['id'] == order_id:
+            if i['id'] == int(order_id):
                 if i['status'] == 3:
                     file = open(s_path_data + "\\finished_orders.json", "r")
                     data = json.load(file)
@@ -283,25 +288,31 @@ def alfa_finished(Vol3,order_id):
 
                 else:
                     pass
-
-
-
-
     else:
         return ["ОШИБКА"]
-
-
 
 def main():
     vilki2 = pd.read_csv(main_path_data + "\\vilki2.csv")
 
     for ind in vilki2.index:
-        if vilki2['birga_y'][ind] == 'live':
-            para = str(vilki2['valin_y'][ind])+str(vilki2['valout_y'][ind])
-            live_finished(para, str(vilki2['order_id'][ind]))
-        elif vilki2['birga_y'][ind] == 'hot':
-            para = str(vilki2['valin_y'][ind]) + '/' +str(vilki2['valout_y'][ind])
-            hot_finished(para,str(vilki2['order_id'][ind]))
+        if vilki2['birga_x'][ind] == 'live':
+            para = str(vilki2['valin_x'][ind])+str(vilki2['valout_x'][ind])
+            live_finished(para, str(int(vilki2['order_id'][ind])))
+        elif vilki2['birga_x'][ind] == 'hot':
+            tickers_all = ['BTC/USD', 'BTC/USDT', 'PZM/USDT', 'ETH/USD', 'ETH/USDT', 'PZM/BTC', 'ETH/BTC']
+
+            parametr1 = "{}/{}".format(str(vilki2['valin_x'][ind]), str(vilki2['valout_x'][ind]))
+            parametr2 = "{}/{}".format(str(vilki2['valout_x'][ind]), str(vilki2['valin_x'][ind]))
+
+            for i in tickers_all:
+                if i == parametr1:
+                    para = i
+                    pass
+                elif i == parametr2:
+                    para = i
+                    pass
+
+            hot_finished(para,str(int(vilki2['order_id'][ind])))
         else:
-            alfa_finished(vilki2['Vol3'][ind],str(vilki2['order_id'][ind]))
+            alfa_finished(vilki2['Vol2'][ind],int(vilki2['order_id'][ind]))
     return
