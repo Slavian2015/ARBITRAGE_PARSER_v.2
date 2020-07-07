@@ -291,19 +291,44 @@ def alfa_finished(Vol3,order_id):
     else:
         return ["ОШИБКА"]
 
-def main():
-    vilki2 = pd.read_csv(main_path_data + "\\vilki2.csv")
+def main(vilki2, hot,alfa,live,hot2,alfa2,live2):
 
     for ind in vilki2.index:
         if vilki2['birga_x'][ind] == 'live':
+            if vilki2['valin_x'][ind] == 'BTC':
+                if vilki2['My_kurs'][ind] > live2.iloc[0]['rates']:
+                    Reg2_Orders.live_cancel(vilki2['valin_x'][ind],
+                                            vilki2['valout_x'][ind],
+                                            vilki2['order_id'][ind])
+                    vilki2.drop(vilki2.index[ind], inplace=True)
+            else:
+                if vilki2['My_kurs'][ind] > live.iloc[0]['rates']:
+                    Reg2_Orders.live_cancel(vilki2['valin_x'][ind],
+                                            vilki2['valout_x'][ind],
+                                            vilki2['order_id'][ind])
+                    vilki2.drop(vilki2.index[ind], inplace=True)
+
+
             para = str(vilki2['valin_x'][ind])+str(vilki2['valout_x'][ind])
             live_finished(para, str(int(vilki2['order_id'][ind])))
         elif vilki2['birga_x'][ind] == 'hot':
-            tickers_all = ['BTC/USD', 'BTC/USDT', 'PZM/USDT', 'ETH/USD', 'ETH/USDT', 'PZM/BTC', 'ETH/BTC']
+            if vilki2['valin_x'][ind] == 'BTC':
+                if vilki2['My_kurs'][ind] > hot2.iloc[0]['rates']:
+                    Reg2_Orders.hot_cancel(vilki2['valin_x'][ind],
+                                            vilki2['valout_x'][ind],
+                                            vilki2['order_id'][ind])
+                    vilki2.drop(vilki2.index[ind], inplace=True)
+            else:
+                if vilki2['My_kurs'][ind] > hot.iloc[0]['rates']:
+                    Reg2_Orders.hot_cancel(vilki2['valin_x'][ind],
+                                            vilki2['valout_x'][ind],
+                                            vilki2['order_id'][ind])
+                    vilki2.drop(vilki2.index[ind], inplace=True)
 
+
+            tickers_all = ['BTC/USD', 'BTC/USDT', 'PZM/USDT', 'ETH/USD', 'ETH/USDT', 'PZM/BTC', 'ETH/BTC']
             parametr1 = "{}/{}".format(str(vilki2['valin_x'][ind]), str(vilki2['valout_x'][ind]))
             parametr2 = "{}/{}".format(str(vilki2['valout_x'][ind]), str(vilki2['valin_x'][ind]))
-
             for i in tickers_all:
                 if i == parametr1:
                     para = i
@@ -311,8 +336,18 @@ def main():
                 elif i == parametr2:
                     para = i
                     pass
-
             hot_finished(para,str(int(vilki2['order_id'][ind])))
         else:
+            if vilki2['valin_x'][ind] == 'BTC':
+                if vilki2['My_kurs'][ind] > alfa2.iloc[0]['rates']:
+                    Reg2_Orders.alfa_cancel(vilki2['order_id'][ind])
+                    vilki2.drop(vilki2.index[ind], inplace=True)
+
+            else:
+                if vilki2['My_kurs'][ind] > alfa.iloc[0]['rates']:
+                    Reg2_Orders.alfa_cancel(vilki2['order_id'][ind])
+                    vilki2.drop(vilki2.index[ind], inplace=True)
+
             alfa_finished(vilki2['Vol2'][ind],int(vilki2['order_id'][ind]))
-    return
+
+    return vilki2
