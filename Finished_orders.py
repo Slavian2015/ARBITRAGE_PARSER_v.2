@@ -4,7 +4,8 @@ import requests
 import time
 from urllib.parse import urlencode
 import os
-import pandas as pd
+import Reg2_Orders
+import pandas
 
 main_path_data = os.path.abspath(r"C:/inetpub/wwwroot/WBW/data")
 s_path_data = os.path.abspath("./data")
@@ -291,7 +292,7 @@ def alfa_finished(Vol3,order_id):
     else:
         return ["ОШИБКА"]
 
-def main(vilki2, hot,alfa,live,hot2,alfa2,live2):
+def main(vilki2, hot,alfa,live,hot2,alfa2,live2,alfat):
 
     for ind in vilki2.index:
         if vilki2['birga_x'][ind] == 'live':
@@ -343,8 +344,12 @@ def main(vilki2, hot,alfa,live,hot2,alfa2,live2):
                     Reg2_Orders.alfa_cancel(vilki2['order_id'][ind])
                     vilki2.drop(vilki2.index[ind], inplace=True)
 
-            else:
+            elif vilki2['valin_x'][ind] == 'USD':
                 if vilki2['My_kurs'][ind] > alfa.iloc[0]['rates']:
+                    Reg2_Orders.alfa_cancel(vilki2['order_id'][ind])
+                    vilki2.drop(vilki2.index[ind], inplace=True)
+            else:
+                if vilki2['My_kurs'][ind] > alfat.iloc[0]['rates']:
                     Reg2_Orders.alfa_cancel(vilki2['order_id'][ind])
                     vilki2.drop(vilki2.index[ind], inplace=True)
 

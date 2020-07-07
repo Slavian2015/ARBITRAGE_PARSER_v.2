@@ -127,7 +127,8 @@ def regim():
                     my_dict = finished_orders[df_vilki.iloc[0]['birga_x']]
                     if str(my_order) in my_dict:
                         if my_dict[str(my_order)] >= float(df_vilki.iloc[0]['min_A']):
-                            if float(my_dict[str(my_order)]) >= float(df_vilki.iloc[0]['Vol2']):
+                            check_vol = float(df_vilki.iloc[0]['Vol2']) - float(my_dict[str(my_order)])
+                            if check_vol <= 0:
                                 birga = df_vilki.iloc[0]['birga_y']
                                 val3 = df_vilki.iloc[0]['valin_y']
                                 val4 = df_vilki.iloc[0]['valout_y']
@@ -187,7 +188,7 @@ def regim():
                                 json.dump(json_object, a_file)
                                 a_file.close()
                                 Balance.NewBalance()
-                            else:
+                            elif check_vol > 0 and check_vol < float(df_vilki.iloc[0]['min_A']):
                                 birga = df_vilki.iloc[0]['birga_x']
                                 val3 = df_vilki.iloc[0]['valin_y']
                                 val4 = df_vilki.iloc[0]['valout_y']
@@ -256,6 +257,8 @@ def regim():
                                 bot_sendtext(
                                     f" ЕСТЬ ВИЛКА: {nl} РЕЖИМ : {df_vilki.iloc[0]['regim']} {nl} {df_vilki.iloc[0]['birga_x']} / {df_vilki.iloc[0]['birga_y']} {nl} "
                                     f"{reponse} / {my_order} {nl} {df_vilki.iloc[0]['valin_x']} -> {df_vilki.iloc[0]['valout_x']} -> {df_vilki.iloc[0]['valout_y']} {nl} "
+                                    f"{df_vilki.iloc[0]['birga_x']} / {df_vilki.iloc[0]['rates_y']} {nl} "
+                                    f"{df_vilki.iloc[0]['Vol2']} / {df_vilki.iloc[0]['Vol3']} {nl} "
                                     f"PROFIT: {profit} {nl} ")
 
                                 vilki2.drop(vilki2.index[vilki2["regim"] == int(k)], inplace=True)
@@ -361,6 +364,9 @@ if __name__ == "__main__":
             with open(main_path_data + "\\alfa_bd_PU.csv", 'r') as f:
                 alfa_bd = pd.read_csv(f)
                 f.close()
+            with open(main_path_data + "\\alfa_bd_PUT.csv", 'r') as f:
+                alfa_bdt = pd.read_csv(f)
+                f.close()
             with open(main_path_data + "\\hot_bd_PU.csv", 'r') as f:
                 hot_bd = pd.read_csv(f)
                 f.close()
@@ -396,6 +402,9 @@ if __name__ == "__main__":
             alfa2 = alfa_bd2[alfa_bd2['direction'] == 'buy'].head(1)
             as_PU2 = alfa_bd2[alfa_bd2['direction'] == 'sell'].head(1)
 
+            alfat = alfa_bdt[alfa_bdt['direction'] == 'buy'].head(1)
+            as_PUt = alfa_bdt[alfa_bdt['direction'] == 'sell'].head(1)
+
             live2 = live_bd2[live_bd2['direction'] == 'buy'].head(1)
             ls_PU2 = live_bd2[live_bd2['direction'] == 'sell'].head(1)
 
@@ -404,7 +413,7 @@ if __name__ == "__main__":
             fo.close()
 
             vilki2 = pd.read_csv(second_path_data + "\\vilki2.csv")
-            vilki2 = Finished_orders.main(vilki2,hot,alfa,live,hot2,alfa2,live2)
+            vilki2 = Finished_orders.main(vilki2,hot,alfa,live,hot2,alfa2,live2,alfat)
             # t2 = time.time()
             regim()
             t3 = time.time()

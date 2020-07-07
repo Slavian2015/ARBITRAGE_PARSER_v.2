@@ -83,7 +83,7 @@ def refresh():
         return alfa_PU
 
 
-    list = [('https://btc-alpha.com/api/v1/orderbook/PZM_USD', 'USD', 'PZM', 5),('https://btc-alpha.com/api/v1/orderbook/PZM_BTC', 'BTC', 'PZM', 5)]
+    list = [('https://btc-alpha.com/api/v1/orderbook/PZM_USD', 'USD', 'PZM', 5),('https://btc-alpha.com/api/v1/orderbook/PZM_BTC', 'BTC', 'PZM', 5),('https://btc-alpha.com/api/v1/orderbook/PZM_USDT', 'USDT', 'PZM', 5)]
 
     for i in list:
         if i[1] == 'USD':
@@ -97,7 +97,7 @@ def refresh():
                 print('#####   OOOPsss .... DB   ######')
                 os.remove(main_path_data + "\\alfa_bd_PU.csv")
                 df.to_csv(main_path_data + "\\alfa_bd_PU.csv", index=False, mode="w")
-        else:
+        elif i[1] == 'BTC':
             columns = ['birga', 'valin', 'valout', 'direction', 'rates', 'volume']
             df = pd.DataFrame(ord(i[0],i[1],i[2],i[3]), columns=columns)
 
@@ -108,6 +108,17 @@ def refresh():
                 print('#####   OOOPsss .... DB   ######')
                 os.remove(main_path_data + "\\alfa_bd_PB.csv")
                 df.to_csv(main_path_data + "\\alfa_bd_PB.csv", index=False, mode="w")
+        elif i[1] == 'USDT':
+            columns = ['birga', 'valin', 'valout', 'direction', 'rates', 'volume']
+            df = pd.DataFrame(ord(i[0],i[1],i[2],i[3]), columns=columns)
+
+            try:
+                os.remove(main_path_data + "\\alfa_bd_PUT.csv")
+                df.to_csv(main_path_data + "\\alfa_bd_PUT.csv", index=False, mode="w")
+            except Exception as e:
+                print('#####   OOOPsss .... DB   ######')
+                os.remove(main_path_data + "\\alfa_bd_PUT.csv")
+                df.to_csv(main_path_data + "\\alfa_bd_PUT.csv", index=False, mode="w")
 
 
 if __name__ == "__main__":

@@ -25,25 +25,17 @@ def bot_sendtext2(bot_message):
 
 ########################     ALFA    ##########################
 def alfa(val1, val2, price, amount):
-    #####  direction  (buy  / sell)
     from time import time
-
     if val1 == 'USD' or val1 == 'USDT' or val2 == 'USD' or val2 == 'USDT':
         if val1 == 'USD' or val1 == 'USDT':
             direction = "buy"
-            pass
         else:
             direction = "sell"
-            pass
     elif val1 != 'USD' and val2 != 'USD' and val1 != 'USDT' and val2 != 'USDT':
         if val1 == 'BTC':
             direction = "buy"
-            pass
         else:
             direction = "sell"
-            pass
-
-
 
     tickers_all = ['BTC_USD', 'PZM_USD', 'ETH_USD', 'ETH_USDT', 'PZM_BTC', 'ETH_BTC']
 
@@ -53,60 +45,20 @@ def alfa(val1, val2, price, amount):
     for i in tickers_all:
         if i == parametr1:
             para = i
-            pass
         elif i == parametr2:
             para = i
-            pass
-
-    # urll = 'https://btc-alpha.com/api/v1/pairs/'
-    # respo = requests.request("GET", urll)
-    # examm = respo.json()
-    #
-    # dec_val = para.split('_')
-    #
-    # for i in examm:
-    #     if i['currency2'] == dec_val[1] and i['currency1'] == dec_val[0]:
-    #         # amount = round(float(amount), int(i['price_precision']))
-    #         amount = Context(prec=(i['price_precision'] + 2), rounding=ROUND_DOWN).create_decimal(amount)
-    #         amount = float(amount)
-    #         pass
-    #     else:
-    #         pass
     for i in rools['alfa']['amount_precision']:
         if para == i:
-
-            print('AMOUNT 1 ####', amount)
-
             d = int(rools['alfa']['amount_precision'][i])
-
             def custom_round(number, ndigits=d):
                 return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
-
             amount = custom_round(amount)
-            print('AMOUNT 3 ####', amount)
-            pass
-        else:
-            pass
     for i in rools['alfa']['price_precision']:
         if para == i:
-
-            # # price = format(price, '.10f')
-            # print('PRICE  ####', price)
-            # price = Context(prec=(rools['alfa']['price_precision'][i] + 1), rounding=ROUND_DOWN).create_decimal(price)
-            # price = float(price)
-            # print('PRICE  ####', price)
-
-            print('PRICE  before ####', price)
             d = rools['alfa']['price_precision'][i]
-
             def custom_round(number, ndigits=d):
                 return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
-
             price = custom_round(price)
-            print('PRICE after ####', price)
-            pass
-        else:
-            pass
 
 
     def keys():
@@ -138,19 +90,9 @@ def alfa(val1, val2, price, amount):
     input2 = json_object["1"]['api']
 
     if input1 != "Api key" and input2 != "Api secret":
-        # Свой класс исключений
+
         class ScriptError(Exception):
             pass
-
-        class ScriptQuitCondition(Exception):
-            pass
-
-        print('NEW ORDER :', 'ALFA', '\n')
-        print('direction  :', direction)
-        print('para  :', para)
-        print('amount  :', amount)
-        print('price  :', price)
-
         order = {
             'type': direction,
             'pair': para,
@@ -172,39 +114,22 @@ def alfa(val1, val2, price, amount):
 
         def resm():
             try:
-                # Полученный ответ переводим в строку UTF, и пытаемся преобразовать из текста в объект Python
                 obj = json.loads(response.text)
-                # Смотрим, есть ли в полученном объекте ключ "error"
                 if 'error' in obj and obj['error']:
-                    # nl = '\n'
-                    # bot_sendtext2(
-                    #     f" BIRGA ALFA -: {nl} {obj} {nl} {order}")
                     return obj['error']
-                    # Если есть, выдать ошибку, код дальше выполняться не будет
-                    # raise ScriptError(obj['error'])
-                # Вернуть полученный объект как результат работы ф-ции
-                # nl = '\n'
-                # bot_sendtext2(
-                #     f" BIRGA ALFA +: {nl} {obj} {nl} {order}")
                 try:
                     gg = obj['success']
                 except:
                     gg = obj
                 return gg
             except ValueError:
-                # Если не удалось перевести полученный ответ (вернулся не JSON)
                 return ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
-                # raise ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
-
         return resm()
-
     else:
         return ["ОШИБКА"]
 
 ########################     HOT    ##########################
 def hot(val1, val2, price, amount):
-  #####  direction  (buy  / sell)
-
   if val1 == 'USD' or val1 == 'USDT' or val2 == 'USD' or val2 == 'USDT':
       if val1 == 'USD' or val1 == 'USDT':
           direction = 2
@@ -228,60 +153,23 @@ def hot(val1, val2, price, amount):
   for i in tickers_all:
     if i == parametr1:
       para = i
-      pass
     elif i == parametr2:
       para = i
-      pass
 
-  # print('PARA :', para)
-
-  # urll = 'https://api.hotbit.io/api/v1/market.list'
-  # respo = requests.request("GET", urll)
-  # examm = respo.json()
-
-
-  # dec_val = para.replace('/', '')
-  #
-  # for i in examm['result']:
-  #     if i['name'] == dec_val:
-  #         # print(i['stock_prec']+2)
-  #         # print(type(i['stock_prec']))
-  #         amount = Context(prec=(i['stock_prec']+2), rounding=ROUND_DOWN).create_decimal(amount)
-  #         amount = float(amount)
-  #         # print(amount)
-  #         # amount = round(float(amount), int(i['stock_prec']))
-  #         pass
-  #     else:
-  #         pass
   for i in rools['hot']['amount_precision']:
         if para == i:
-            print('AMOUNT 1 ####', amount)
-
             d = int(rools['hot']['amount_precision'][i])
 
             def custom_round(number, ndigits=d):
                 return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
-
             amount = custom_round(amount)
-            print('AMOUNT 3 ####', amount)
-
-            pass
-        else:
-            pass
   for i in rools['hot']['price_precision']:
         if para == i:
-
-            print('PRICE  before ####', price)
             d = rools['hot']['price_precision'][i]
 
             def custom_round(number, ndigits=d):
                 return int(number * 10 ** ndigits) / 10.0 ** ndigits if ndigits else int(number)
-
             price = custom_round(price)
-            print('PRICE after ####', price)
-            pass
-        else:
-            pass
 
   def keys():
     if os.path.isfile(main_path_data + "\\keys.json"):
@@ -316,26 +204,12 @@ def hot(val1, val2, price, amount):
       class ScriptError(Exception):
           pass
 
-      class ScriptQuitCondition(Exception):
-          pass
-
-      print('\n', 'NEW ORDER :', 'HOT', '\n')
-      print('direction  :', direction)
-      print('para  :', para)
-      print('amount  :', amount)
-      print('price  :', price)
 
       msg = "amount={}&api_key={}&isfee=0&market={}&price={}&side={}&secret_key={}".format(
           amount, input1, para, price, direction, input2)
-
-      # print("####   MSG  :",msg)
       sign = hashlib.md5(msg.encode()).hexdigest().upper()
       url2 = 'https://api.hotbit.io/api/v1/order.put_limit?amount={}&api_key={}&isfee=0&market={}&price={}&side={}&sign={}'.format(amount, input1, para, price, direction,sign)
-
-      # print("####   url2  :", url2)
-
       response = requests.request("GET", url2)
-      # exam2 = response.json()
       def resm():
         try:
           # Полученный ответ переводим в строку UTF, и пытаемся преобразовать из текста в объект Python
@@ -343,24 +217,12 @@ def hot(val1, val2, price, amount):
           # print('obj :', obj)
           # Смотрим, есть ли в полученном объекте ключ "error"
           if 'error' in obj and obj['error']:
-            # nl = '\n'
-            # bot_sendtext2(f" BIRGA HOT -: {nl} {obj} {nl} {order}")
             return obj['error']['message']
-            # Если есть, выдать ошибку, код дальше выполняться не будет
-            # raise ScriptError(obj['error'])
-          # Вернуть полученный объект как результат работы ф-ции
-          # nl = '\n'
-          # bot_sendtext2(
-          #     f" BIRGA HOT +: {nl} {obj}")
           return obj['result']['id']
         except ValueError:
           # Если не удалось перевести полученный ответ (вернулся не JSON)
           return ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
-          # raise ScriptError('Ошибка анализа возвращаемых данных, получена строка', response)
-
       return resm()
-
-
   else:
     return ["ОШИБКА"]
 
@@ -612,15 +474,12 @@ def all_csv(birga_1, birga_2, rate1, rate2, val1, val2, val4, val1_vol, val2_vol
         profit = (float(val4_vol) - float(val1_vol))
         perc = (((float(val4_vol) - float(val1_vol)) / float(val1_vol)) * 100)
         nl = '\n'
-        val1_vol = ("{:.6f}".format(val1_vol))
-        val2_vol = ("{:.6f}".format(val2_vol))
-        val4_vol = ("{:.6f}".format(val4_vol))
+        rate1 = ("{:.9f}".format(rate1))
+        rate2 = ("{:.9f}".format(rate2))
         profit = ("{:.6f}".format(profit))
         perc = ("{:.2f}".format(perc))
         bot_sendtext(
-            f" ЕСТЬ ВИЛКА: {nl} {birga_1} / {birga_2} {nl} {reponse_b1} / {reponse_b2} {nl} {val1} -> {val2} -> {val4} {nl} {val1_vol} -> {val2_vol} -> {val4_vol} {nl} {profit} {nl} {perc} {nl} ")
-
-        print('---------   OUT  from CSV  --------')
+            f" ЕСТЬ ВИЛКА (режим 1): {nl} {birga_1} / {birga_2} {nl} {reponse_b1} / {reponse_b2} {nl} {val1} -> {val2} -> {val4} {nl} {rate1} // {rate2} {nl} {profit} {nl} {perc} {nl} ")
         return
     else:
         pass

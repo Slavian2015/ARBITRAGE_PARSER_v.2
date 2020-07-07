@@ -182,12 +182,10 @@ def fast_refresh():
     
     reg2.loc[:,"volume"] = reg2[['volume_y','Bal2','Bal1']].min(axis=1)
 
-
     reg2.loc[:,'Vol1'] = reg2['rates_x'] * reg2['volume'] + (reg2['rates_x'] * reg2['volume'] * reg2['Com_x'] / 100)
     reg2.loc[:,'Vol2'] = reg2['volume']
     reg2.loc[:,'Vol3'] = reg2['volume']
     reg2.loc[:,'Vol4'] = reg2['rates_y'] * reg2['volume'] - (reg2['rates_y'] * reg2['volume'] * reg2['Com_y'] / 100)
-
 
     fil_a = reg2[reg2['birga_x'] == 'alfa'].index
     reg2.loc[(fil_a), 'Vol3'] = reg2.loc[(fil_a), 'Vol2'] - (reg2.loc[(fil_a), 'Vol2'] * reg2.loc[(fil_a), 'Com_x'] / 100)
@@ -200,10 +198,6 @@ def fast_refresh():
     reg2['profit'] = reg2['profit'].apply(pd.to_numeric, errors='coerce')
     reg2['percent'] = reg2['percent'].apply(pd.to_numeric, errors='coerce')
 
-    # reg2 = reg2[reg2['Vol2'].notnull()]
-    # dddd33 = reg2.dropna()
-    #
-    # reg2 = dddd33
     reg2 = reg2[reg2['direction_y'] != 'buy']
     reg2.to_csv(main_path_data + "\\vilki_all.csv", header=True, index=False)
     #################################################################################################
@@ -219,8 +213,6 @@ def fast_refresh():
                       (final["percent"] > float(v["profit"])) &
                       (final["Vol2"] > float(v["order"]))
             ]
-
-
             per = (float(v["per"]) / 100)
             dft.loc[:,'Vol1'] = dft['Vol1'] * per
             dft.loc[:,'Vol2'] = dft['Vol2'] * per
@@ -228,18 +220,13 @@ def fast_refresh():
             dft.loc[:,'Vol4'] = dft['Vol4'] * per
 
             dft = dft[(dft["Vol3"] > float(v["order"]))]
-
-
             now = dt.datetime.now()
             timerr = now.strftime("%H:%M:%S")
-
             dft['avtomat'] = v["avtomat"]
             dft['regim'] = k
             dft['timed'] = timerr
-
             dft = dft.sort_values(by=['Vol2'], ascending=False)
             dft = dft.head(1)
-
             fids = pd.concat([dft, fids], ignore_index=True, join='outer')
         return fids
 
@@ -277,15 +264,8 @@ def fast_refresh():
                    'Go']
 
     dfs['profit'] = dfs['profit'].map('{:,.2f}'.format)
-
-
-
     dfs.index = range(len(dfs))
     dfs = dfs.sort_values(by=['profit'], ascending=False)
-
-    now = dt.datetime.now()
-    print('\n', now.strftime("%H:%M:%S"), '\n')
-
     if dfs.shape[0] > 0:
         dfs.to_csv(second_path_data + "\\vilki.csv", header=True, index=False)
         filter1 = dfs[(dfs['Go'] == 'on')]
@@ -304,18 +284,7 @@ def fast_refresh():
                             filter1.iloc[0]['Vol4'],
                             filter1.iloc[0]['val3'])
             Balance.NewBalance()
-            # file = open(second_path_data + "\\new_regims.json", "r")
-            # data = json.load(file)
-            # file.close()
-            # for k, v in data.items():
-            #     v['avtomat'] = 'off'
-            #
-            # f = open(second_path_data + "\\new_regims.json", "w")
-            # json.dump(data, f)
-            # f.close()
             time.sleep(1.1)
-        else:
-            pass
     else:
         dw2 = {'regim': 'пусто',
                'timed': 'пусто',
@@ -336,8 +305,6 @@ def fast_refresh():
         df2 = pd.DataFrame(data=dw2, index=[0])
         df2.drop_duplicates(inplace=True)
         df2.to_csv(second_path_data + "\\vilki.csv", header=True, index=False)
-
-
     return
 
 if __name__ == "__main__":
